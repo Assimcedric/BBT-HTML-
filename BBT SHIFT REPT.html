@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Générateur de Rapport BBT</title>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "brewery-brown": "#5D4037",
+              "brewery-amber": "#FFA000",
+              "brewery-green": "#388E3C",
+              "brewery-light-green": "#4CAF50"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div id="app" class="container py-6 max-w-5xl mx-auto px-4">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-brewery-brown mb-2 flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-brewery-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 6.1H3v10h14V6.1Z"></path>
+            <path d="M8 2v2"></path>
+            <path d="M12 2v2"></path>
+            <path d="M17 4c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4"></path>
+            <path d="M14.5 16H8a4 4 0 0 1-4-4 3.9 3.9 0 0 1 4-4h8.5"></path>
+          </svg>
+          Générateur de Rapport BBT
+        </h1>
+        <p class="text-lg text-gray-600">
+          Générer des rapports détaillés sur l'état des BBT pour les opérations de brasserie
+        </p>
+      </div>
+      
+      <div class="mb-6">
+        <div class="grid w-full grid-cols-2 bg-gray-200 p-1 rounded-md">
+          <button id="generate-tab-btn" class="text-lg py-3 bg-white rounded-sm shadow-sm flex justify-center items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <line x1="10" y1="9" x2="8" y2="9"></line>
+            </svg>
+            Générer Rapport
+          </button>
+          <button id="preview-tab-btn" class="text-lg py-3 flex justify-center items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h18v18H3z"></path>
+              <path d="M8 16h8"></path>
+              <path d="M8 12h8"></path>
+              <path d="M8 8h4"></path>
+            </svg>
+            Aperçu du Rapport
+          </button>
+        </div>
+      </div>
+      
+      <div id="generate-tab" class="animate-fade-in">
+        <!-- Shift Information Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold">Informations sur le Quart de Travail</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="space-y-2">
+              <label for="date" class="block text-sm font-medium">Date:</label>
+              <input id="date" type="date" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="shift" class="block text-sm font-medium">Quart:</label>
+              <select id="shift" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="MORNING">MATIN (7:00 - 14:00)</option>
+                <option value="AFTERNOON">APRÈS-MIDI (14:00 - 22:00)</option>
+                <option value="NIGHT">NUIT (22:00 - 7:00)</option>
+              </select>
+            </div>
+            
+            <div class="space-y-2">
+              <label for="time" class="block text-sm font-medium">Heure du Rapport:</label>
+              <input id="time" type="time" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Big Capacity BBT's Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 6.1H3v10h14V6.1Z"></path>
+                <path d="M8 2v2"></path>
+                <path d="M12 2v2"></path>
+                <path d="M17 4c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4"></path>
+                <path d="M14.5 16H8a4 4 0 0 1-4-4 3.9 3.9 0 0 1 4-4h8.5"></path>
+              </svg>
+              BBT Grande Capacité
+            </h2>
+            <p class="text-sm sm:text-base text-gray-600">Entrez l'état de chaque BBT de grande capacité</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="big-tanks-container">
+            <!-- Tank cards will be added here by JavaScript -->
+          </div>
+        </div>
+        
+        <!-- Small Capacity BBT's Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 6.1H3v10h14V6.1Z"></path>
+                <path d="M8 2v2"></path>
+                <path d="M12 2v2"></path>
+                <path d="M17 4c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4"></path>
+                <path d="M14.5 16H8a4 4 0 0 1-4-4 3.9 3.9 0 0 1 4-4h8.5"></path>
+              </svg>
+              BBT Petite Capacité
+            </h2>
+            <p class="text-sm sm:text-base text-gray-600">Entrez l'état de chaque BBT de petite capacité</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="small-tanks-container">
+            <!-- Tank cards will be added here by JavaScript -->
+          </div>
+        </div>
+        
+        <!-- CO2 Consumption Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold">Consommation de CO2</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label for="co2Consumption" class="block text-sm font-medium">Consommation de CO2 (kg):</label>
+              <input id="co2Consumption" type="number" min="0" step="0.1" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="co2EndShift" class="block text-sm font-medium">Compteur de CO2 en fin de quart (kg):</label>
+              <input id="co2EndShift" type="number" min="0" step="0.1" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="volumeAdjusted" class="block text-sm font-medium">Volume ajusté (hls):</label>
+              <input id="volumeAdjusted" type="number" min="0" step="0.1" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="volumeBubbled" class="block text-sm font-medium">Volume bullé (hls):</label>
+              <input id="volumeBubbled" type="number" min="0" step="0.1" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="space-y-2 md:col-span-2">
+              <label for="sirCards" class="block text-sm font-medium">Cartes SIR:</label>
+              <input id="sirCards" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filtration Room Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold">Salle de Filtration</h2>
+          </div>
+          <div class="grid grid-cols-1 gap-6">
+            <div class="space-y-2">
+              <label for="volumeFiltre" class="block text-sm font-medium">VOLUME FILTRÉ (hls):</label>
+              <input id="volumeFiltre" type="number" min="0" step="0.1" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="filtrationText" class="block text-sm font-medium">FILTRATION:</label>
+              <textarea id="filtrationText" rows="3" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Ready To Drink Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold">Ready To Drink (RTD)</h2>
+          </div>
+          <div class="grid grid-cols-1 gap-6">
+            <div class="space-y-2">
+              <label for="productionText" class="block text-sm font-medium">PRODUCTION:</label>
+              <textarea id="productionText" rows="2" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            
+            <div class="space-y-2">
+              <label for="fbtText" class="block text-sm font-medium">FBT:</label>
+              <textarea id="fbtText" rows="2" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            
+            <div class="space-y-2">
+              <label for="sbtText" class="block text-sm font-medium">SBT:</label>
+              <textarea id="sbtText" rows="2" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            
+            <div class="space-y-2">
+              <label for="bptText" class="block text-sm font-medium">BPT:</label>
+              <textarea id="bptText" rows="2" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Beer Received Section -->
+        <div class="bg-white p-4 sm:p-6 mb-6 rounded-md border shadow-sm overflow-x-auto">
+          <div class="mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold">Bière Reçue du Process et RTD vers BBT</h2>
+          </div>
+          <div class="space-y-6" id="beer-transfer-container">
+            <!-- Beer transfer forms will be added here by JavaScript -->
+          </div>
+        </div>
+        
+        <div class="text-center mt-8 mb-4">
+          <button id="generate-report-btn" class="px-6 py-3 text-white rounded-md bg-brewery-green hover:bg-brewery-light-green font-medium">
+            Générer l'Aperçu du Rapport
+          </button>
+        </div>
+      </div>
+      
+      <div id="preview-tab" class="animate-fade-in hidden">
+        <div class="bg-white p-4 mb-4 rounded-md border shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Aperçu du Rapport Généré</h2>
+            <div class="space-x-2">
+              <button id="copy-btn" class="px-3 py-1 border rounded-md text-sm font-medium flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copier
+              </button>
+              <button id="download-btn" class="px-3 py-1 bg-brewery-green text-white rounded-md text-sm font-medium flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Télécharger
+              </button>
+            </div>
+          </div>
+          <div id="report-content" class="whitespace-pre-wrap bg-gray-100 p-4 rounded border max-h-[500px] overflow-y-auto font-mono text-sm"></div>
+        </div>
+        <div class="text-center">
+          <button id="back-to-form-btn" class="px-4 py-2 border rounded-md font-medium">
+            Retour au Formulaire
+          </button>
+        </div>
+      </div>
+      
+      <div class="text-center text-gray-600 text-sm mt-8 pt-4 border-t">
+        <p>©2025 Assimcedric</p>
+      </div>
+    </div>
+
+    <script>
+      // Constants
+      const BIG_TANKS = ["BBT17", "BBT18", "BBT19", "BBT20", "BBT21", "BBT22", "BBT23", "BBT24", "BBT25"];
+      const SMALL_TANKS = ["BBT11", "BBT12", "BBT13", "BBT14", "BBT15", "BBT16"];
+      const BRANDS = ["FES", "GES", "HARP", "MALTA", "ORIJIN", "ICEBLK", "ICEPPLE"];
+      const STATUSES = [
+        "Filling", "To Line 5", "To Line 6", "To Line 7", "Rest Line 5", 
+        "Rest Line 6", "Rest Line 7", "To Complete", "At Lab", "To Bubble and Sample", 
+        "To Clean", "Clean", "Bubbling", "Empty", "Emptying", "Maintenance", "Faulty", 
+        "Pure & Filtré", "Pure & Non Filtré", "Cleaning", "OK", "EX-BT11", "EX-BT12", 
+        "EX-BT13", "EX-BT14", "EX-BT15", "EX-BT16", "EX-BT17", "EX-BT18", "EX-BT19",
+        "EX-BT20", "EX-BT21", "EX-BT22", "EX-BT23", "EX-BT24", "EX-BT25"
+      ];
+      
+      // Global state object to store all form data
+      const formState = {
+        date: new Date().toISOString().substr(0, 10),
+        time: new Date().toTimeString().substr(0, 5),
+        shift: "MORNING",
+        co2Consumption: "",
+        co2EndShift: "",
+        volumeAdjusted: "",
+        volumeBubbled: "",
+        sirCards: "",
+        volumeFiltre: "",
+        filtrationText: "",
+        productionText: "",
+        fbtText: "",
+        sbtText: "",
+        bptText: "",
+        tanks: {},
+        beerTransfers: {
+          MORNING: {},
+          AFTERNOON: {},
+          NIGHT: {}
+        }
+      };
+      
+      // Initialization
+      document.addEventListener('DOMContentLoaded', function() {
+        initializeTabs();
+        initializeDateTime();
+        createTankCards();
+        createBeerTransferForms();
+        bindEvents();
+      });
+      
+      function initializeTabs() {
+        const generateTabBtn = document.getElementById('generate-tab-btn');
+        const previewTabBtn = document.getElementById('preview-tab-btn');
+        const generateTab = document.getElementById('generate-tab');
+        const previewTab = document.getElementById('preview-tab');
+        
+        generateTabBtn.addEventListener('click', function() {
+          generateTab.classList.remove('hidden');
+          previewTab.classList.add('hidden');
+          generateTabBtn.classList.add('bg-white', 'shadow-sm');
+          previewTabBtn.classList.remove('bg-white', 'shadow-sm');
+        });
+        
+        previewTabBtn.addEventListener('click', function() {
+          generateTab.classList.add('hidden');
+          previewTab.classList.remove('hidden');
+          generateTabBtn.classList.remove('bg-white', 'shadow-sm');
+          previewTabBtn.classList.add('bg-white', 'shadow-sm');
+        });
+        
+        document.getElementById('back-to-form-btn').addEventListener('click', function() {
+          generateTab.classList.remove('hidden');
+          previewTab.classList.add('hidden');
+          generateTabBtn.classList.add('bg-white', 'shadow-sm');
+          previewTabBtn.classList.remove('bg-white', 'shadow-sm');
+        });
+      }
+      
+      function initializeDateTime() {
+        const now = new Date();
+        
+        // Set date
+        const dateInput = document.getElementById('date');
+        dateInput.value = now.toISOString().substr(0, 10);
+        dateInput.addEventListener('change', function() {
+          formState.date = this.value;
+        });
+        
+        // Set time
+        const timeInput = document.getElementById('time');
+        timeInput.value = now.toTimeString().substr(0, 5);
+        timeInput.addEventListener('change', function() {
+          formState.time = this.value;
+        });
+        
+        // Set shift based on current time
+        const hour = now.getHours();
+        let shiftValue = "NIGHT";
+        if (7 <= hour && hour < 14) {
+          shiftValue = "MORNING";
+        } else if (14 <= hour && hour < 22) {
+          shiftValue = "AFTERNOON";
+        }
+        
+        const shiftSelect = document.getElementById('shift');
+        shiftSelect.value = shiftValue;
+        formState.shift = shiftValue;
+        
+        shiftSelect.addEventListener('change', function() {
+          formState.shift = this.value;
+        });
+        
+        // Initialize other form fields with event listeners
+        const simpleFields = [
+          { id: 'co2Consumption', stateKey: 'co2Consumption' },
+          { id: 'co2EndShift', stateKey: 'co2EndShift' },
+          { id: 'volumeAdjusted', stateKey: 'volumeAdjusted' },
+          { id: 'volumeBubbled', stateKey: 'volumeBubbled' },
+          { id: 'sirCards', stateKey: 'sirCards' },
+          { id: 'volumeFiltre', stateKey: 'volumeFiltre' },
+          { id: 'filtrationText', stateKey: 'filtrationText' },
+          { id: 'productionText', stateKey: 'productionText' },
+          { id: 'fbtText', stateKey: 'fbtText' },
+          { id: 'sbtText', stateKey: 'sbtText' },
+          { id: 'bptText', stateKey: 'bptText' }
+        ];
+        
+        simpleFields.forEach(field => {
+          const element = document.getElementById(field.id);
+          element.addEventListener('input', function() {
+            formState[field.stateKey] = this.value;
+          });
+        });
+      }
+      
+      function createTankCards() {
+        createTanksInContainer(BIG_TANKS, 'big-tanks-container', true);
+        createTanksInContainer(SMALL_TANKS, 'small-tanks-container', false);
+      }
+      
+      function createTanksInContainer(tanks, containerId, isBigTank) {
+        const container = document.getElementById(containerId);
+        
+        tanks.forEach(tankId => {
+          // Initialize tank state if not exists
+          if (!formState.tanks[tankId]) {
+            formState.tanks[tankId] = {
+              status: "Empty",
+              brand: "",
+              volume: "",
+              co2: "...",
+              dO: "...",
+              temp: "..."
+            };
+          }
+          
+          const tankCard = document.createElement('div');
+          tankCard.className = 'tank-card flex-1 min-w-[250px] sm:min-w-[300px] bg-white border rounded-md p-4';
+          
+          let cardContent = `
+            <div class="flex justify-between items-center mb-3 pb-2 border-b">
+              <span class="font-bold text-brewery-brown">${tankId}</span>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="space-y-1">
+                <label for="${tankId}-status" class="block text-sm font-medium">Status:</label>
+                <select id="${tankId}-status" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  ${STATUSES.map(stat => `<option value="${stat}" ${formState.tanks[tankId].status === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                </select>
+              </div>
+              
+              <div class="status-dependent-fields ${isEmptyOrMaintenance(formState.tanks[tankId].status) ? 'hidden' : ''}">
+                <div class="space-y-1">
+                  <label for="${tankId}-brand" class="block text-sm font-medium">Brand:</label>
+                  <select id="${tankId}-brand" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="" ${formState.tanks[tankId].brand === '' ? 'selected' : ''}>Select brand</option>
+                    ${BRANDS.map(brand => `<option value="${brand}" ${formState.tanks[tankId].brand === brand ? 'selected' : ''}>${brand}</option>`).join('')}
+                  </select>
+                </div>
+                
+                <div class="space-y-1 mt-3">
+                  <label for="${tankId}-volume" class="block text-sm font-medium">Volume (hls):</label>
+                  <input id="${tankId}-volume" type="number" min="0" step="0.1" value="${formState.tanks[tankId].volume}" class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+          `;
+          
+          if (isBigTank) {
+            cardContent += `
+                <div class="flex justify-between items-center mt-3">
+                  <span class="text-sm font-medium">Parameters:</span>
+                  <button id="${tankId}-toggle-params" class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200">
+                    Edit Manually
+                  </button>
+                </div>
+                
+                <div class="space-y-1 mt-3">
+                  <label for="${tankId}-co2" class="block text-sm font-medium">CO2 (g/l):</label>
+                  <input id="${tankId}-co2" value="${formState.tanks[tankId].co2}" readonly class="w-full rounded-md border px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                
+                <div class="space-y-1 mt-3">
+                  <label for="${tankId}-do" class="block text-sm font-medium">DO (ppb):</label>
+                  <input id="${tankId}-do" value="${formState.tanks[tankId].dO}" readonly class="w-full rounded-md border px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                
+                <div class="space-y-1 mt-3">
+                  <label for="${tankId}-temp" class="block text-sm font-medium">Temperature (°C):</label>
+                  <input id="${tankId}-temp" value="${formState.tanks[tankId].temp}" readonly class="w-full rounded-md border px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            `;
+          }
+          
+          cardContent += `
+              </div>
+            </div>
+          `;
+          
+          tankCard.innerHTML = cardContent;
+          container.appendChild(tankCard);
+          
+          // Add event listeners
+          const statusSelect = document.getElementById(`${tankId}-status`);
+          const brandSelect = document.getElementById(`${tankId}-brand`);
+          const volumeInput = document.getElementById(`${tankId}-volume`);
+          const dependentFields = tankCard.querySelector('.status-dependent-fields');
+          
+          // Status change
+          statusSelect.addEventListener('change', function() {
+            const newStatus = this.value;
+            formState.tanks[tankId].status = newStatus;
+            
+            const isEmpty = isEmptyOrMaintenance(newStatus);
+            dependentFields.classList.toggle('hidden', isEmpty);
+            
+            if (isEmpty) {
+              formState.tanks[tankId].brand = "";
+              formState.tanks[tankId].volume = "";
+              formState.tanks[tankId].co2 = "...";
+              formState.tanks[tankId].dO = "...";
+              formState.tanks[tankId].temp = "...";
+              
+              if (brandSelect) brandSelect.value = "";
+              if (volumeInput) volumeInput.value = "";
+              
+              if (isBigTank) {
+                document.getElementById(`${tankId}-co2`).value = "...";
+                document.getElementById(`${tankId}-do`).value = "...";
+                document.getElementById(`${tankId}-temp`).value = "...";
+              }
+            } else if (!isEmpty && formState.tanks[tankId].brand && isBigTank) {
+              updateTankParams(tankId, newStatus, formState.tanks[tankId].brand);
+            }
+          });
+          
+          // Brand change
+          if (brandSelect) {
+            brandSelect.addEventListener('change', function() {
+              const newBrand = this.value;
+              formState.tanks[tankId].brand = newBrand;
+              
+              if (isBigTank && !isEmptyOrMaintenance(statusSelect.value)) {
+                updateTankParams(tankId, statusSelect.value, newBrand);
+              }
+            });
+          }
+          
+          // Volume change
+          if (volumeInput) {
+            volumeInput.addEventListener('input', function() {
+              formState.tanks[tankId].volume = this.value;
+            });
+          }
+          
+          // Toggle parameters editing for big tanks
+          if (isBigTank) {
+            const toggleBtn = document.getElementById(`${tankId}-toggle-params`);
+            const co2Input = document.getElementById(`${tankId}-co2`);
+            const doInput = document.getElementById(`${tankId}-do`);
+            const tempInput = document.getElementById(`${tankId}-temp`);
+            let paramsEditable = false;
+            
+            toggleBtn.addEventListener('click', function() {
+              paramsEditable = !paramsEditable;
+              
+              co2Input.readOnly = !paramsEditable;
+              doInput.readOnly = !paramsEditable;
+              tempInput.readOnly = !paramsEditable;
+              
+              co2Input.classList.toggle('bg-gray-100', !paramsEditable);
+              doInput.classList.toggle('bg-gray-100', !paramsEditable);
+              tempInput.classList.toggle('bg-gray-100', !paramsEditable);
+              
+              toggleBtn.textContent = paramsEditable ? 'Auto Generate' : 'Edit Manually';
+            });
+            
+            // Parameter inputs change events
+            co2Input.addEventListener('input', function() {
+              formState.tanks[tankId].co2 = this.value;
+            });
+            
+            doInput.addEventListener('input', function() {
+              formState.tanks[tankId].dO = this.value;
+            });
+            
+            tempInput.addEventListener('input', function() {
+              formState.tanks[tankId].temp = this.value;
+            });
+          }
+        });
+      }
+      
+      function updateTankParams(tankId, status, brand) {
+        // Skip if there's no brand or status
+        if (!status || !brand) return;
+        
+        // Generate parameters based on status and brand
+        const params = generateParameters(status, brand);
+        
+        // Get the input elements
+        const co2Input = document.getElementById(`${tankId}-co2`);
+        const doInput = document.getElementById(`${tankId}-do`);
+        const tempInput = document.getElementById(`${tankId}-temp`);
+        
+        // Skip if inputs are being manually edited
+        if (!co2Input.readOnly) return;
+        
+        // Update the parameter fields
+        co2Input.value = params.CO2;
+        doInput.value = params.DO;
+        tempInput.value = params.Temp;
+        
+        // Update state
+        formState.tanks[tankId].co2 = params.CO2;
+        formState.tanks[tankId].dO = params.DO;
+        formState.tanks[tankId].temp = params.Temp;
+      }
+      
+      function generateParameters(status, brand) {
+        let parameters = {
+          CO2: "...",
+          DO: "...",
+          Temp: "..."
+        };
+        
+        if (status === "Filling") {
+          // Keep default values
+        } else if (["To Line 5", "To Line 6", "To Line 7", "Rest Line 5", "Rest Line 6", "Rest Line 7", "Emptying", "At Lab", "OK"].includes(status)) {
+          if (["FES", "GES", "HARP", "MALTA"].includes(brand)) {
+            parameters.CO2 = (Math.random() * 0.2 + 5.8).toFixed(1);
+          } else if (["ICEBLK", "ICEPPLE"].includes(brand)) {
+            parameters.CO2 = (Math.random() * 0.2 + 5.3).toFixed(1);
+          } else if (brand === "ORIJIN") {
+            parameters.CO2 = "4.5";
+          }
+          parameters.DO = String(Math.floor(Math.random() * 51) + 50); // 50-100
+          parameters.Temp = String(Math.floor(Math.random() * 5) + 1); // 1-5
+        } else if (status === "To Bubble and Sample") {
+          if (["FES", "GES", "HARP", "MALTA"].includes(brand)) {
+            parameters.CO2 = (Math.random() * 1.0 + 4.0).toFixed(1);
+          } else if (["ICEBLK", "ICEPPLE"].includes(brand)) {
+            parameters.CO2 = (Math.random() * 0.7 + 4.3).toFixed(1);
+          } else if (brand === "ORIJIN") {
+            parameters.CO2 = "3.5";
+          }
+          parameters.DO = String(Math.floor(Math.random() * 201) + 500); // 500-700
+          parameters.Temp = String(Math.floor(Math.random() * 5) + 1); // 1-5
+        } else if (status === "To Complete") {
+          parameters.DO = String(Math.floor(Math.random() * 201) + 500); // 500-700
+          parameters.Temp = String(Math.floor(Math.random() * 5) + 1); // 1-5
+        } else if (status === "Bubbling") {
+          if (["FES", "GES", "HARP", "MALTA"].includes(brand)) {
+            parameters.CO2 = (Math.random() * 0.5 + 5.5).toFixed(1);
+          } else if (["ICEBLK", "ICEPPLE"].includes(brand)) {
+            parameters.CO2 = (Math.random() * 0.2 + 5.3).toFixed(1);
+          } else if (brand === "ORIJIN") {
+            parameters.CO2 = "4.5";
+          }
+          parameters.DO = String(Math.floor(Math.random() * 101) + 500); // 500-600
+          parameters.Temp = String(Math.floor(Math.random() * 5) + 1); // 1-5
+        }
+        
+        return parameters;
+      }
+      
+      function isEmptyOrMaintenance(status) {
+        return ["Empty", "Cleaning", "Clean", "Maintenance", "Faulty"].includes(status);
+      }
+      
+      function createBeerTransferForms() {
+        const container = document.getElementById('beer-transfer-container');
+        const shifts = ["MORNING", "AFTERNOON", "NIGHT"];
+        
+        shifts.forEach(shiftName => {
+          // Initialize beer transfer state if not exists
+          if (!formState.beerTransfers[shiftName]) {
+            formState.beerTransfers[shiftName] = BRANDS.reduce((acc, brand) => ({ ...acc, [brand]: "0" }), {});
+          }
+          
+          const formCard = document.createElement('div');
+          formCard.className = 'bg-white p-4 rounded-md border';
+          
+          let formContent = `
+            <h3 class="font-semibold mb-3">${shiftName} SHIFT:</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          `;
+          
+          BRANDS.forEach(beer => {
+            formContent += `
+              <div class="space-y-1">
+                <label for="${shiftName.toLowerCase()}-${beer}" class="block text-sm font-medium">
+                  ${beer} (hls):
+                </label>
+                <input
+                  id="${shiftName.toLowerCase()}-${beer}"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value="${formState.beerTransfers[shiftName][beer] || '0'}"
+                  class="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            `;
+          });
+          
+          // Calculate total
+          const totalVolume = Object.values(formState.beerTransfers[shiftName])
+            .reduce((sum, val) => sum + (parseFloat(val) || 0), 0)
+            .toFixed(1);
+          
+          formContent += `
+            </div>
+            <div class="mt-4 font-medium" id="${shiftName.toLowerCase()}-total">
+              Total Volume Transféré: ${totalVolume} hls
+            </div>
+          `;
+          
+          formCard.innerHTML = formContent;
+          container.appendChild(formCard);
+          
+          // Add event listeners for each input
+          BRANDS.forEach(beer => {
+            const input = document.getElementById(`${shiftName.toLowerCase()}-${beer}`);
+            input.addEventListener('input', function() {
+              formState.beerTransfers[shiftName][beer] = this.value;
+              updateTotalVolume(shiftName);
+            });
+          });
+        });
+      }
+      
+      function updateTotalVolume(shiftName) {
+        const totalElement = document.getElementById(`${shiftName.toLowerCase()}-total`);
+        const totalVolume = Object.values(formState.beerTransfers[shiftName])
+          .reduce((sum, val) => sum + (parseFloat(val) || 0), 0)
+          .toFixed(1);
+          
+        totalElement.textContent = `Total Volume Transféré: ${totalVolume.toFixed(1)} hls`;
+      }
+      
+      function bindEvents() {
+        // Generate report button
+        document.getElementById('generate-report-btn').addEventListener('click', generateReportPreview);
+        
+        // Copy button
+        document.getElementById('copy-btn').addEventListener('click', async function() {
+          const reportContent = document.getElementById('report-content').textContent;
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(reportContent);
+              alert('Rapport copié dans le presse-papiers');
+            } else {
+              // Fallback pour les navigateurs qui ne supportent pas navigator.clipboard
+              const textArea = document.createElement('textarea');
+              textArea.value = reportContent;
+              document.body.appendChild(textArea);
+              textArea.select();
+              const success = document.execCommand('copy');
+              document.body.removeChild(textArea);
+              if (success) {
+                alert('Rapport copié dans le presse-papiers (méthode de secours)');
+              } else {
+                alert('La méthode de secours a échoué. Veuillez copier manuellement.');
+              }
+            }
+          } catch (err) {
+            console.error('Erreur lors de la copie :', err);
+            alert('Impossible de copier le rapport. Veuillez vérifier les permissions du navigateur.');
+          }
+        });
+        
+        // Download button
+        document.getElementById('download-btn').addEventListener('click', function() {
+          const reportContent = document.getElementById('report-content').textContent;
+          const formattedDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
+          const shiftValue = document.getElementById('shift').value;
+          
+          const filename = `BBT_Report_${formattedDate}_${shiftValue}.txt`;
+          
+          const element = document.createElement('a');
+          element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportContent));
+          element.setAttribute('download', filename);
+          
+          element.style.display = 'none';
+          document.body.appendChild(element);
+          
+          element.click();
+          
+          document.body.removeChild(element);
+          
+          alert(`Rapport téléchargé sous le nom: ${filename}`);
+        });
+      }
+      
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+      }
+      
+      function generateReportPreview() {
+        const formattedDate = formatDate(formState.date);
+        
+        let reportText = `[${formattedDate}] BBT ${formState.shift} LIQUID AVAILABILITY STATUS@[${formState.time}]\n`;
+        reportText += "-".repeat(58) + "\n\n";
+        
+        // Big BBT section
+        reportText += "🍺 B̲I̲G̲ ̲C̲A̲P̲A̲C̲I̲T̲Y̲ ̲B̲B̲T̲'̲S̲\n\n";
+        
+        BIG_TANKS.forEach(tank => {
+          const tankData = formState.tanks[tank] || { status: "Empty", brand: "", volume: "", co2: "...", dO: "...", temp: "..." };
+          
+          reportText += `${tank}: ${tankData.brand || "..."}@${tankData.volume || "..."} hls\n`;
+          reportText += `- CO2 = ${tankData.co2} g/l\n`;
+          reportText += `- DO  = ${tankData.dO} ppb\n`;
+          reportText += `- T°C = ${tankData.temp} °C\n`;
+          reportText += `- *Statut = ${tankData.status}*\n\n`;
+        });
+        
+        // Small BBT section
+        reportText += "🍻 S̲M̲A̲L̲L̲ ̲C̲A̲P̲A̲C̲I̲T̲Y̲ ̲B̲B̲T̲'̲S̲\n\n";
+        
+        SMALL_TANKS.forEach(tank => {
+          const tankData = formState.tanks[tank] || { status: "Empty", brand: "", volume: "" };
+          
+          reportText += `${tank}: ${tankData.brand || "..."}@${tankData.volume || "..."} hls\n`;
+          reportText += `- *Statut = ${tankData.status}*\n\n`;
+        });
+        
+        // CO2 Consumption section
+        reportText += "-".repeat(58) + "\n\n";
+        reportText += "🎯 C̲O̲2̲ ̲C̲O̲N̲S̲U̲M̲P̲T̲I̲O̲N̲\n\n";
+        reportText += `CO2 Consumption: ${formState.co2Consumption || "0"} kg\n`;
+        reportText += `CO2 End Shift Counter: ${formState.co2EndShift || "0"} kg\n`;
+        reportText += `Volume adjusted: ${formState.volumeAdjusted || "0"} hls\n`;
+        reportText += `Volume bubbled: ${formState.volumeBubbled || "0"} hls\n`;
+        reportText += `SIR Cards: ${formState.sirCards || "None"}\n\n`;
+        
+        // Filtration Room section
+        reportText += "-".repeat(58) + "\n\n";
+        reportText += "🧪️ F̲I̲L̲T̲R̲A̲T̲I̲O̲N̲ ̲R̲O̲O̲M̲\n";
+        reportText += `VOLUME FILTRÉ: ${formState.volumeFiltre || "0"} hls\n`;
+        reportText += `FILTRATION ${formState.filtrationText || "None"}\n\n`;
+        
+        // RTD section
+        reportText += "-".repeat(58) + "\n\n";
+        reportText += "🍶 R̲E̲A̲D̲Y̲ ̲T̲O̲ ̲D̲R̲I̲N̲K̲ ̲(̲R̲T̲D̲)̲:\n\n";
+        reportText += `PRODUCTION: ${formState.productionText || "None"}\n\n`;
+        reportText += `FBT:\n- ${formState.fbtText || "None"}\n\n`;
+        reportText += `SBT:\n- ${formState.sbtText || "None"}\n\n`;
+        reportText += `BPT:\n- ${formState.bptText || "None"}\n\n`;
+        
+        // Beer Received section
+        reportText += "-".repeat(58) + "\n\n";
+        reportText += "🧃 B̲E̲E̲R̲ ̲R̲E̲C̲E̲I̲V̲E̲D̲ ̲F̲R̲O̲M̲ ̲P̲R̲O̲C̲E̲S̲S̲ ̲A̲N̲D̲ ̲R̲T̲D̲ ̲T̲O̲ ̲B̲B̲T̲'̲S̲\n\n";
+        
+        // For each shift
+        ['MORNING', 'AFTERNOON', 'NIGHT'].forEach(shiftName => {
+          reportText += `${shiftName} SHIFT:\n`;
+          let totalVolume = 0;
+          
+          BRANDS.forEach(beer => {
+            const volume = parseFloat(formState.beerTransfers[shiftName][beer] || "0");
+            reportText += `${beer} = ${volume} hls\n`;
+            totalVolume += volume;
+          });
+          
+          reportText += `*Total Vol Transféré: ${totalVolume.toFixed(1)} hls*\n\n`;
+        });
+        
+        // Set the report content and show the preview tab
+        document.getElementById('report-content').textContent = reportText;
+        
+        // Switch to preview tab
+        document.getElementById('generate-tab').classList.add('hidden');
+        document.getElementById('preview-tab').classList.remove('hidden');
+        document.getElementById('generate-tab-btn').classList.remove('bg-white', 'shadow-sm');
+        document.getElementById('preview-tab-btn').classList.add('bg-white', 'shadow-sm');
+      }
+    </script>
+  </body>
+</html>
